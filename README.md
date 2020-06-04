@@ -1,8 +1,34 @@
-# imi-enrichment-jsic
+# 産業分類候補生成パッケージ一式 imi-enrichment-jsic ES
 
-与えられた自由文 (string) に対して、所与のコードリストから適切なコードを推薦します。
+与えられた自由文 (string) に対して、所与のコードリストから適切なコードを推薦するESモジュールです。
 コードには `説明` が付与されているものとします。
 この実装ではコードリストとして日本標準産業分類を整備・使用します。
+
+[![esmodules](https://taisukef.github.com/denolib/esmodulesbadge.svg)](https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Modules)
+[![deno](https://taisukef.github.com/denolib/denobadge.svg)](https://deno.land/)
+
+# 利用者向け情報
+
+## API
+
+モジュール `imi-enrichment-jsic` は以下のような API の関数を提供します。
+
+```
+import IMIEnrichmentJSIC from "https://code4sabae.github.io/imi-enrichment-jsic-es/IMIEnrichmentJSIC.mjs";
+console.log(IMIEnrichmentJSIC("インターネットサービスプロバイダ"));
+```
+
+- 入力 (input) : 入力テキストとする String
+- 出力 : 推薦結果の JSON ※ 推薦は同期で行うため Promise でないことに注意
+
+以下のように HTML で読み込み、使用することができます。
+
+```
+<script type="module">
+import IMIEnrichmentJSIC from "https://code4sabae.github.io/imi-enrichment-jsic-es/IMIEnrichmentJSIC.mjs";
+console.log(IMIEnrichmentJSIC("インターネットサービスプロバイダ"));
+</script>
+```
 
 **codelist.json**
 
@@ -32,7 +58,8 @@
       "表記": "管理，補助的経済活動を行う事業所（01農業）",
       "説明": "...",
       "上位コード" : "http://data.e-stat.go.jp/lod/ontology/crossDomain/code/industryClassification2013-A01"
-    },...
+    },
+    ...
   ]
 }
 ```
@@ -179,64 +206,52 @@
 - JSON Object は `score` の値が大きい順にソートされているものとします
 - 与えられた文字列に対して推薦できるコードが存在しない場合には空の配列が返ります
 
+# 開発者向け情報
 
-# 利用者向け情報
+## 環境構築
 
-以下の手順はパッケージアーカイブ `imi-enrichment-jsic-1.0.0.tgz` を用いて実行します。
-
-## インストール
-
-以下の手順でインストールします。
+以下の手順で環境を構築します。
 
 ```
-$ npm install imi-enrichment-jsic-1.0.0.tgz
+$ git clone https://github.com/code4sabae/imi-enrichment-jsic-es.git
 ```
 
 ## コマンドラインインターフェイス
 
-`imi-enrichment-jsic-1.0.0.tgz` にはコマンドラインインターフェイスが同梱されており、
-通常はインストールすると `imi-enrichment-jsic` コマンドが使用できるようになります。
-
-コマンドラインインターフェイスのファイルの実体は `bin/cli.js` です。
+コマンドラインインターフェイスのファイルの実体は `bin/cli.mjs` です。
 
 ```
-$ npm install imi-enrichment-jsic-1.0.0.tgz
+$ cd bin
 
 # ヘルプの表示
-$ imi-enrichment-jsic -h
+$ deno run cli.mjs -h
 
 # テキストファイルからの推薦
-$ imi-enrichment-jsic input.txt > output.json
+$ deno run --allow-read cli.mjs input.txt > output.json
 
 # 標準入力のテキストからの推薦
-$ cat input.json | imi-enrichment-jsic > output.json
+$ cat input.json | deno run cli.mjs > output.json
 
 # 文字列からの推薦
-$ imi-enrichment-jsic -s インターネットサービスプロバイダ > output.json
+$ deno run cli.mjs -s インターネットサービスプロバイダ > output.json
 
-```
-
-または `npx` を使って以下のようにインストールせずに実行することも可能です。
-
-```
-$ npx imi-enrichment-jsic-1.0.0.tgz -s インターネットサービスプロバイダ
 ```
 
 ## Web API
 
-`imi-enrichment-jsic-1.0.0.tgz` には Web API を提供するサーバプログラムが同梱されています。
+Web API を提供するサーバプログラムが同梱されています。
 
 ### サーバの起動方法
 
-`bin/server.js` がサーバの実体です。
-以下のように `bin/server.js` を実行することで起動できます。
+`bin/server.mjs` がサーバの実体です。
+以下のように `bin/server.mjs` を実行することで起動できます。
 
 ```
-$ npm install imi-enrichment-jsic-1.0.0.tgz
-$ node node_modules/imi-enrichment-jsic/bin/server.js
-Usage: node server.js [port number]
+$ cd bin
+$ deno run -A server.mjs
+Usage: deno run -A server.mjs [port number]
 
-$ node node_modules/imi-enrichment-jsic/bin/server.js 8080
+$ deno run -A server.mjs 8080
 imi-enrichment-jsic-server is running on port 8080
 ```
 
@@ -281,35 +296,13 @@ $ curl -X POST -H 'Content-Type: text/plain' -d 'インターネットサービ�
 - POST,GET 以外のメソッドでアクセスした場合には `405 Method Not Allowed` エラーが返されます
 - POST Body を入力テキストとして扱い、推薦結果のコード群からなる JSON を返します
 
-## API (Node.js)
+## データ生成
 
-モジュール `imi-enrichment-jsic` は以下のような API の関数を提供します。
-
-```
-module.exports = function(input) {..}
-```
-
-- 入力 (input) : 入力テキストとする String
-- 出力 : 推薦結果の JSON ※ 推薦は同期で行うため Promise でないことに注意
+コードリストは [e-Stat 日本標準産業分類](https://www.e-stat.go.jp/classifications/terms/10) でダウンロードできる CSV データ(data/FEK_download.utf8.csv)を、tools/csv2json.mjsで加工して作成します。コードの `@id` には統計 LOD で整備されている URI を付与しています。
 
 ```
-const jsic = require('imi-enrichment-jsic');
-console.log(jsic("インターネットサービスプロバイダ"));
-```
-
-# 開発者向け情報
-
-以下の手順はソースコードアーカイブ `imi-enrichment-jsic-1.0.0.src.tgz` を用いて実行します。
-
-## 環境構築
-
-以下の手順で環境を構築します。
-
-```
-$ mkdir imi-enrichment-jsic
-$ cd imi-enrichment-jsic
-$ tar xvzf /tmp/imi-enrichment-jsic-1.0.0.src.tgz
-$ npm install
+$ cd tools
+$ deno run --allow-read tools/csv2json.mjs data/FEK_download.utf8.csv > lib/jsic.mjs
 ```
 
 ## テスト
@@ -317,29 +310,21 @@ $ npm install
 以下の手順でテストを実行します
 
 ```
-$ cd imi-enrichment-jsic
-$ npm test
+$ deno test --allow-read
 ```
 
+## 依存関係
 
-## ブラウザビルド(参考情報)
+なし
 
-以下の手順を実行するとブラウザで動作する Javascript `dist/imi-enrichment-jsic.js` が生成されます。
+## 出典
 
-```
-$ cd imi-enrichment-jsic
-$ npm run browser
-$ ls dist
-imi-enrichment-jsic.js
-```
+本ライブラリは IMI 情報共有基盤 コンポーネントツール <https://info.gbiz.go.jp/tools/imi_tools/> の「産業分類候補生成パッケージ一式」をESモジュール対応したものです。
 
-以下のように HTML で読み込むと、グローバルスコープに `IMIEnrichmentJSIC` 関数が登録されます。
+## 関連記事
 
-```
-<script src="imi-enrichment-jsic.js"></script>
-<script>
-console.log(IMIEnrichmentJSIC("インターネットサービスプロバイダ"));
-</script>
-```
+Deno対応ESモジュール対応、IMIコンポーネントツールx4とDenoバッジ  
+https://fukuno.jig.jp/2866  
 
-この `IMIEnrichmentJSIC` に String を渡すことで、変換結果を取得できます。
+日本政府発のJavaScriptライブラリを勝手にweb標準化するプロジェクト、全角-半角統一コンポーネントのESモジュール/Deno対応版公開  
+https://fukuno.jig.jp/2865  

@@ -1,14 +1,18 @@
-const fs = require("fs");
-const Papa = require("papaparse");
+// deno run --allow-read tools/csv2json.mjs data/FEK_download.utf8.csv > lib/jsic.mjs
 
-const csv = fs.readFileSync(process.argv[2], "UTF-8");
+import Papa from "https://dev.jspm.io/papaparse@5.2";
+
+const csv = Deno.readTextFileSync(Deno.args[0]);
 
 const data = Papa.parse(csv).data.filter(col => col[0].match(/^[a-zA-Z0-9]+$/));
 
 let prefix = "";
 data.forEach(col => {
-  if (col[0].match(/^[A-Z]$/)) prefix = col[0];
-  else col[0] = prefix + col[0];
+  if (col[0].match(/^[A-Z]$/)) {
+    prefix = col[0];
+  } else {
+    col[0] = prefix + col[0];
+  }
 });
 
 const graph = data.map(col => {
@@ -31,7 +35,7 @@ graph.forEach(child => {
   });
 });
 
-console.log(JSON.stringify({
+console.log("export const json = " + JSON.stringify({
   "@context": "https://imi.go.jp/ns/core/context.jsonld",
   "@graph": graph
 }, null, 2));
